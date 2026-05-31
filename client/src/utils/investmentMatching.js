@@ -14,7 +14,8 @@ export const INTAKE_ROLES = [
   { id: "philanthropist",title: "Philanthropist",          desc: "Impact-driven giving in education",               icon: "heart" },
   { id: "education",     title: "Education organization",  desc: "Partner with or support K-12 schools",            icon: "book" },
   { id: "agency",        title: "Public agency",           desc: "Public investment or program alignment",           icon: "landmark" },
-  { id: "operator",      title: "School operator",         desc: "Charter, district, or network expansion",          icon: "school" }
+  { id: "operator",      title: "School operator",         desc: "Charter, district, or network expansion",          icon: "school" },
+  { id: "other",         title: "Other",                   desc: "Exploring options or undefined role",              icon: "circle-help" }
 ];
 
 export const INTAKE_BUDGETS = [
@@ -41,7 +42,8 @@ const ROLE_LABELS = {
   philanthropist:"Philanthropist",
   education:     "Education Organization",
   agency:        "Public Agency",
-  operator:      "School Operator"
+  operator:      "School Operator",
+  other:         "Other"
 };
 
 const BUDGET_LABELS = {
@@ -258,8 +260,7 @@ function buildRisks(match, parish) {
   ];
 }
 
-function buildPartners(match, parish) {
-  const state = "Louisiana";
+function buildPartners(match) {
   const parishShort = match.parishName;
   return [
     `${parishShort} area community college or technical institute (dual enrollment and instructor pipeline)`,
@@ -304,7 +305,7 @@ export function generateInvestmentBrief(profile, topMatches) {
     whyReasons:      buildWhyReasons(profile, match, parish),
     evidenceSignals: buildEvidenceSignals(match, parish),
     risks:           buildRisks(match, parish),
-    partners:        buildPartners(match, parish),
+    partners:        buildPartners(match),
     nextSteps: [
       "Validate official LDOE and local school data before any funding decision.",
       "Confirm local implementation partners and program readiness.",

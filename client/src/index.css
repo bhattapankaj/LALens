@@ -594,6 +594,20 @@ input, select { width: 100%; border: 1px solid var(--border); border-radius: 12p
 }
 
 .dashboard-stack, .dashboard-top, .chart-grid, .list-grid, .source-grid, .pipeline { display: grid; gap: 0.8rem; }
+
+.dash-collapsibles { padding: 0; overflow: hidden; }
+.dash-collapsible { border-bottom: 1px solid rgba(31,36,55,0.07); }
+.dash-collapsible:last-child { border-bottom: none; }
+.dash-collapsible-toggle {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1rem; background: none; border: none; cursor: pointer;
+  font-size: 0.85rem; font-weight: 600; color: var(--text); text-align: left;
+  transition: background 0.15s;
+}
+.dash-collapsible-toggle:hover { background: rgba(109,93,251,0.04); }
+.dash-collapsible-label { display: flex; align-items: center; gap: 0.45rem; }
+.dash-collapsible-icon { color: #7c3aed; display: flex; }
+.dash-collapsible-body { padding: 0 0.75rem 0.85rem; }
 .dashboard-top { grid-template-columns: 300px 1fr; }
 .score-card-big h2 { font-size: 3rem; margin: 0; color: var(--purple); }
 .priority-pill { display: inline-flex; border-radius: 999px; padding: 0.2rem 0.55rem; font-size: 0.75rem; margin: 0.45rem 0; }

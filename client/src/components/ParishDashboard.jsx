@@ -1,8 +1,25 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { CircleAlert, Lightbulb, Handshake, MapPin, ListChecks, ArrowRight } from "lucide-react";
+import { CircleAlert, Lightbulb, Handshake, MapPin, ListChecks, ArrowRight, ChevronDown, ChevronRight } from "lucide-react";
 import { explainScoreDrivers } from "../utils/scoring";
 import ScoreBreakdown from "./ScoreBreakdown";
+
+function Collapsible({ title, icon, defaultOpen = false, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="dash-collapsible">
+      <button type="button" className="dash-collapsible-toggle" onClick={() => setOpen((v) => !v)}>
+        <span className="dash-collapsible-label">
+          {icon && <span className="dash-collapsible-icon" aria-hidden>{icon}</span>}
+          {title}
+        </span>
+        {open ? <ChevronDown size={15} aria-hidden /> : <ChevronRight size={15} aria-hidden />}
+      </button>
+      {open && <div className="dash-collapsible-body">{children}</div>}
+    </div>
+  );
+}
 
 function ChartEmptyState({ title }) {
   return (
@@ -115,10 +132,10 @@ function ParishDashboard({ parish }) {
 
   const radarData = [
     { factor: "Need", value: parish.studentNeedScore },
-    { factor: "Enroll", value: parish.enrollmentPressureScore },
+    { factor: "Enrollment", value: parish.enrollmentPressureScore },
     { factor: "Workforce", value: parish.workforceGapScore },
     { factor: "Access", value: parish.pathwayAccessGapScore },
-    { factor: "Feasible", value: parish.feasibilityScore }
+    { factor: "Feasibility", value: parish.feasibilityScore }
   ];
 
   const trendData = (parish.enrollmentTrend || []).map((value, index) => ({ year: `Y${index + 1}`, value }));
@@ -126,83 +143,86 @@ function ParishDashboard({ parish }) {
 
   return (
     <section className="dashboard-stack">
-      <div className="dashboard-primary">
-        <div className="dashboard-top">
-          <article className="card score-card-big">
-            <p className="section-label">Opportunity Score</p>
-            <div className="score-card-head">
-              <h2>{parish.opportunityScore}</h2>
-              <span className="prototype-badge">Prototype score</span>
-            </div>
-            <span className={`priority-pill ${parish.priorityLevel.toLowerCase()}`}>{parish.priorityLevel}</span>
-            <p>{parish.name}</p>
-            <p className="tiny muted dashboard-driver-line">Top drivers: {driverLine}</p>
-          </article>
-          <article className="card dashboard-intervention-card">
-            <p className="section-label">Recommended Intervention</p>
-            <h3>{parish.recommendedIntervention}</h3>
-            <p>{parish.recommendationSummary}</p>
-          </article>
-        </div>
-        <ScoreBreakdown parish={parish} compact />
-      </div>
-
-      <div className="chart-grid">
-        <article className="card">
-          <h3>Score Radar</h3>
-          <ResponsiveContainer width="100%" height={chartHeight}>
-            <RadarChart data={radarData}>
-              <PolarGrid stroke="#E6E8F0" />
-              <PolarAngleAxis dataKey="factor" stroke="#697089" />
-              <Radar dataKey="value" stroke="#6D5DFB" fill="#6D5DFB" fillOpacity={0.35} />
-            </RadarChart>
-          </ResponsiveContainer>
+      {/* ── Primary: score + intervention always visible ── */}
+      <div className="dashboard-top">
+        <article className="card score-card-big">
+          <p className="section-label">Opportunity Score</p>
+          <div className="score-card-head">
+            <h2>{parish.opportunityScore}</h2>
+            <span className="prototype-badge">Prototype score</span>
+          </div>
+          <span className={`priority-pill ${parish.priorityLevel.toLowerCase()}`}>{parish.priorityLevel}</span>
+          <p>{parish.name}</p>
+          <p className="tiny muted dashboard-driver-line">Top drivers: {driverLine}</p>
         </article>
-        <article className="card">
-          <h3>Enrollment Trend</h3>
-          <ResponsiveContainer width="100%" height={chartHeight}>
-            <LineChart data={trendData}>
-              <CartesianGrid stroke="#E6E8F0" strokeDasharray="4 4" />
-              <XAxis dataKey="year" stroke="#697089" />
-              <YAxis stroke="#697089" />
-              <Tooltip />
-              <Line type="monotone" dataKey="value" stroke="#5EDFFF" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </article>
-        <article className="card">
-          <h3>Workforce Fit</h3>
-          <ResponsiveContainer width="100%" height={chartHeight}>
-            <BarChart data={parish.workforceFit || []}>
-              <CartesianGrid stroke="#E6E8F0" strokeDasharray="4 4" />
-              <XAxis dataKey="sector" stroke="#697089" />
-              <YAxis stroke="#697089" />
-              <Tooltip />
-              <Bar dataKey="value" fill="#6C5CE7" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+        <article className="card dashboard-intervention-card">
+          <p className="section-label">Recommended Intervention</p>
+          <h3>{parish.recommendedIntervention}</h3>
+          <p>{parish.recommendationSummary}</p>
         </article>
       </div>
 
-      <div className="list-grid">
-        <article className="card">
-          <h3>
-            <Lightbulb size={15} /> Evidence
-          </h3>
-          <ul>{parish.keyEvidence.map((x) => <li key={x}>{x}</li>)}</ul>
-        </article>
-        <article className="card">
-          <h3>
-            <CircleAlert size={15} /> Risks
-          </h3>
-          <ul>{parish.risks.map((x) => <li key={x}>{x}</li>)}</ul>
-        </article>
-        <article className="card">
-          <h3>
-            <Handshake size={15} /> Partners
-          </h3>
-          <ul>{parish.potentialPartners.map((x) => <li key={x}>{x}</li>)}</ul>
-        </article>
+      {/* ── Collapsible sections ── */}
+      <div className="dash-collapsibles card">
+        <Collapsible title="Score breakdown" defaultOpen={false}>
+          <ScoreBreakdown parish={parish} compact />
+        </Collapsible>
+
+        <Collapsible title="Charts" defaultOpen={false}>
+          <div className="chart-grid">
+            <article className="card">
+              <h3>Score Radar</h3>
+              <ResponsiveContainer width="100%" height={200}>
+                <RadarChart data={radarData} margin={{ top: 16, right: 30, bottom: 16, left: 30 }} outerRadius="62%">
+                  <PolarGrid stroke="#E6E8F0" />
+                  <PolarAngleAxis dataKey="factor" stroke="#697089" tick={{ fontSize: 11, fill: "#697089" }} />
+                  <Radar dataKey="value" stroke="#6D5DFB" fill="#6D5DFB" fillOpacity={0.35} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </article>
+            <article className="card">
+              <h3>Enrollment Trend</h3>
+              <ResponsiveContainer width="100%" height={chartHeight}>
+                <LineChart data={trendData}>
+                  <CartesianGrid stroke="#E6E8F0" strokeDasharray="4 4" />
+                  <XAxis dataKey="year" stroke="#697089" />
+                  <YAxis stroke="#697089" />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="value" stroke="#5EDFFF" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </article>
+            <article className="card">
+              <h3>Workforce Fit</h3>
+              <ResponsiveContainer width="100%" height={chartHeight}>
+                <BarChart data={parish.workforceFit || []}>
+                  <CartesianGrid stroke="#E6E8F0" strokeDasharray="4 4" />
+                  <XAxis dataKey="sector" stroke="#697089" />
+                  <YAxis stroke="#697089" />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#6C5CE7" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </article>
+          </div>
+        </Collapsible>
+
+        <Collapsible title="Evidence, risks & partners" defaultOpen={false}>
+          <div className="list-grid">
+            <article className="card">
+              <h3><Lightbulb size={15} /> Evidence</h3>
+              <ul>{parish.keyEvidence.map((x) => <li key={x}>{x}</li>)}</ul>
+            </article>
+            <article className="card">
+              <h3><CircleAlert size={15} /> Risks</h3>
+              <ul>{parish.risks.map((x) => <li key={x}>{x}</li>)}</ul>
+            </article>
+            <article className="card">
+              <h3><Handshake size={15} /> Partners</h3>
+              <ul>{parish.potentialPartners.map((x) => <li key={x}>{x}</li>)}</ul>
+            </article>
+          </div>
+        </Collapsible>
       </div>
     </section>
   );
