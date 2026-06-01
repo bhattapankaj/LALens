@@ -132,10 +132,10 @@ function ParishDashboard({ parish }) {
 
   const radarData = [
     { factor: "Need", value: parish.studentNeedScore },
-    { factor: "Enrollment", value: parish.enrollmentPressureScore },
+    { factor: "Enroll.", value: parish.enrollmentPressureScore },
     { factor: "Workforce", value: parish.workforceGapScore },
     { factor: "Access", value: parish.pathwayAccessGapScore },
-    { factor: "Feasibility", value: parish.feasibilityScore }
+    { factor: "Feasible", value: parish.feasibilityScore }
   ];
 
   const trendData = (parish.enrollmentTrend || []).map((value, index) => ({ year: `Y${index + 1}`, value }));
@@ -172,8 +172,8 @@ function ParishDashboard({ parish }) {
           <div className="chart-grid">
             <article className="card">
               <h3>Score Radar</h3>
-              <ResponsiveContainer width="100%" height={200}>
-                <RadarChart data={radarData} margin={{ top: 16, right: 30, bottom: 16, left: 30 }} outerRadius="62%">
+              <ResponsiveContainer width="100%" height={220}>
+                <RadarChart data={radarData} margin={{ top: 22, right: 55, bottom: 22, left: 55 }} outerRadius="55%">
                   <PolarGrid stroke="#E6E8F0" />
                   <PolarAngleAxis dataKey="factor" stroke="#697089" tick={{ fontSize: 11, fill: "#697089" }} />
                   <Radar dataKey="value" stroke="#6D5DFB" fill="#6D5DFB" fillOpacity={0.35} />

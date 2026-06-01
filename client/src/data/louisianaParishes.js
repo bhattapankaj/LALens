@@ -27,7 +27,7 @@ export const louisianaParishes = [
   { id: "grant", name: "Grant Parish", region: "Central Louisiana", coordinates: [31.6, -92.458] },
   { id: "iberia", name: "Iberia Parish", region: "Acadiana", coordinates: [29.868, -91.755] },
   { id: "iberville", name: "Iberville Parish", region: "Capital Region", coordinates: [30.257, -91.349] },
-  { id: "jackson", name: "Jackson Parish", region: "North Louisiana", coordinates: [32.298, -90.369] },
+  { id: "jackson", name: "Jackson Parish", region: "North Louisiana", coordinates: [32.298, -92.550] },
   { id: "jefferson", name: "Jefferson Parish", region: "Southeast Louisiana", coordinates: [29.897, -90.097] },
   { id: "jefferson-davis", name: "Jefferson Davis Parish", region: "Southwest Louisiana", coordinates: [30.264, -92.819] },
   { id: "lafayette", name: "Lafayette Parish", region: "Acadiana", coordinates: [30.22, -92.01] },

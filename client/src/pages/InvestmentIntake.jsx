@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -17,7 +17,8 @@ import {
   School,
   Wrench,
   HeartPulse,
-  HandHelping
+  HandHelping,
+  HelpCircle
 } from "lucide-react";
 import {
   INTAKE_ROLES,
@@ -35,7 +36,8 @@ const ROLE_ICONS = {
   heart: Heart,
   book: BookOpen,
   landmark: Landmark,
-  school: School
+  school: School,
+  "circle-help": HelpCircle
 };
 const FOCUS_ICONS = {
   book: BookOpen,
@@ -67,58 +69,123 @@ function IntakeStepper({ step }) {
   );
 }
 
+/** Transform AI response → InvestmentBrief shape, enriching a static base brief */
+function enrichBriefWithAI(baseBrief, aiData, budgetLabel) {
+  if (!aiData?.brief?.topMatches?.length) return baseBrief;
+  const ai = aiData.brief;
+  const top = ai.topMatches[0];
+
+  // Build a topMatch from the AI's top pick
+  const topMatch = {
+    ...baseBrief.topMatch,
+    name: top.schoolName || baseBrief.topMatch.name,
+    parishName: top.parishName || baseBrief.topMatch.parishName,
+    parishId: top.parishId || baseBrief.topMatch.parishId,
+    type: top.grades || top.type || baseBrief.topMatch.type,
+    investmentRange: budgetLabel,
+    needSignal: top.estimatedImpact || baseBrief.topMatch.needSignal,
+    programs: top.suggestedUse ? [top.suggestedUse] : baseBrief.topMatch.programs,
+    enrollment: null
+  };
+
+  // Build whyReasons from AI content
+  const whyReasons = [
+    top.whyMatch,
+    ai.whyThisFocus,
+    ...(baseBrief.whyReasons || []).slice(2)
+  ].filter(Boolean).slice(0, 4);
+
+  // Build allMatches from remaining AI picks + original
+  const aiMatches = (ai.topMatches || []).map((s, i) => ({
+    id: `ai-${i}`,
+    name: s.schoolName,
+    parishName: s.parishName,
+    parishId: s.parishId,
+    type: s.grades || s.type,
+    matchScore: Math.max(65, 92 - i * 7),
+    opportunityScore: null,
+    investmentRange: budgetLabel,
+    needSignal: s.estimatedImpact || "",
+    programs: s.suggestedUse ? [s.suggestedUse] : []
+  }));
+
+  return {
+    ...baseBrief,
+    topMatch,
+    whyReasons,
+    risks: ai.keyRisks?.length ? ai.keyRisks : baseBrief.risks,
+    nextSteps: ai.nextSteps?.length ? ai.nextSteps : baseBrief.nextSteps,
+    allMatches: aiMatches.length > 1 ? aiMatches : baseBrief.allMatches
+  };
+}
+
 function InvestmentIntake() {
   const [step, setStep]       = useState(1);
   const [role, setRole]       = useState("");
   const [budget, setBudget]   = useState("");
   const [focus, setFocus]     = useState("");
+  const [brief, setBrief]     = useState(null);
+
+  // Holds the in-flight AI promise so loader can await it
+  const aiFetchRef = useRef(null);
 
   const profile = useMemo(() => ({ role, budget, focus }), [role, budget, focus]);
 
-  const matches = useMemo(() => {
-    if (!role || !budget || !focus) return [];
-    return rankInvestmentMatches(profile);
-  }, [role, budget, focus, profile]);
-
-  const brief = useMemo(() => {
-    if (!matches.length) return null;
-    return generateInvestmentBrief(profile, matches);
-  }, [profile, matches]);
-
   const roleItems = useMemo(
-    () =>
-      INTAKE_ROLES.map((r) => {
-        const Icon = ROLE_ICONS[r.icon] || Briefcase;
-        return { id: r.id, title: r.title, desc: r.desc, icon: <Icon size={22} aria-hidden /> };
-      }),
-    []
+    () => INTAKE_ROLES.map((r) => {
+      const Icon = ROLE_ICONS[r.icon] || Briefcase;
+      return { id: r.id, title: r.title, desc: r.desc, icon: <Icon size={22} aria-hidden /> };
+    }), []
   );
-
   const budgetItems = useMemo(
-    () =>
-      INTAKE_BUDGETS.map((b) => ({
-        id: b.id,
-        title: b.title,
-        desc: b.desc,
-        icon: <DollarSign size={22} aria-hidden />
-      })),
-    []
+    () => INTAKE_BUDGETS.map((b) => ({
+      id: b.id,
+      title: b.title,
+      desc: b.desc,
+      icon: <DollarSign size={22} aria-hidden />
+    })), []
   );
-
   const focusItems = useMemo(
-    () =>
-      INTAKE_FOCUS.map((f) => {
-        const Icon = FOCUS_ICONS[f.icon] || BookOpen;
-        return { id: f.id, title: f.title, desc: f.desc, icon: <Icon size={22} aria-hidden /> };
-      }),
-    []
+    () => INTAKE_FOCUS.map((f) => {
+      const Icon = FOCUS_ICONS[f.icon] || BookOpen;
+      return { id: f.id, title: f.title, desc: f.desc, icon: <Icon size={22} aria-hidden /> };
+    }), []
   );
 
   const canContinue = (step === 1 && role) || (step === 2 && budget) || (step === 3 && focus);
 
   const goNext = () => {
-    if (step < 3) setStep((s) => s + 1);
-    else setStep(4);
+    if (step < 3) {
+      setStep((s) => s + 1);
+    } else {
+      // Step 3 → 4: kick off static matching + AI fetch simultaneously
+      const matches = rankInvestmentMatches({ role, budget, focus });
+      const staticBrief = generateInvestmentBrief({ role, budget, focus }, matches);
+      const budgetLabel = INTAKE_BUDGETS.find((b) => b.id === budget)?.title || budget;
+
+      // Fire AI request immediately — loader will wait for it
+      const base = import.meta.env.VITE_API_URL || "";
+      const aiPromise = fetch(`${base}/api/investment-brief`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role, budget, focus })
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null);
+
+      aiFetchRef.current = aiPromise;
+
+      // Store static brief immediately as fallback
+      setBrief(staticBrief);
+      setStep(4);
+
+      // When AI resolves, enrich
+      aiPromise.then((aiData) => {
+        if (aiData?.ok) {
+          setBrief((prev) => enrichBriefWithAI(prev, aiData, budgetLabel));
+        }
+      });
+    }
   };
 
   const goBack = () => {
@@ -136,7 +203,7 @@ function InvestmentIntake() {
     </header>
   );
 
-  // ── Step 6: confirmation ────────────────────────────────────────────────
+  // ── Step 6: confirmation ────────────────────────────────────────────────────
   if (step === 6) {
     return (
       <main className="intake-page">
@@ -158,7 +225,7 @@ function InvestmentIntake() {
             <p className="tiny muted">Demo workflow. Not a live funding commitment.</p>
             <div className="intake-status-grid">
               <div className="intake-status-tile pending">
-                <strong>{matches.length}</strong>
+                <strong>3</strong>
                 <span>Matched</span>
               </div>
               <div className="intake-status-tile">
@@ -172,19 +239,15 @@ function InvestmentIntake() {
             </div>
           </div>
           <div className="intake-actions">
-            <Link to="/platform" className="btn btn-secondary">
-              Explore parishes
-            </Link>
-            <button type="button" className="btn btn-secondary" onClick={() => setStep(5)}>
-              Back to brief
-            </button>
+            <Link to="/platform" className="btn btn-secondary">Explore parishes</Link>
+            <button type="button" className="btn btn-secondary" onClick={() => setStep(5)}>Back to brief</button>
           </div>
         </motion.div>
       </main>
     );
   }
 
-  // ── Step 4: loading animation ───────────────────────────────────────────
+  // ── Step 4: loading animation ───────────────────────────────────────────────
   if (step === 4) {
     return (
       <main className="intake-page">
@@ -197,7 +260,7 @@ function InvestmentIntake() {
     );
   }
 
-  // ── Step 5: Investment Brief ────────────────────────────────────────────
+  // ── Step 5: Investment Brief ────────────────────────────────────────────────
   if (step === 5) {
     return (
       <main className="intake-page brief-page">
@@ -211,7 +274,7 @@ function InvestmentIntake() {
     );
   }
 
-  // ── Steps 1–3: intake form ──────────────────────────────────────────────
+  // ── Steps 1–3: intake form ──────────────────────────────────────────────────
   return (
     <main className="intake-page">
       {header}
@@ -235,7 +298,7 @@ function InvestmentIntake() {
                   <span className="intake-gradient-text">Louisiana K-12</span> need
                 </h1>
                 <p className="intake-lead">
-                  Tell us who you are and what you want to support. LALens ranks sample schools using parish opportunity signals and pathway fit.
+                  Tell us who you are and what you want to support. LALens ranks real Louisiana schools using parish opportunity signals and the LDOE 2023–24 school directory.
                 </p>
                 <p className="intake-field-label">I am a…</p>
                 <IntakeChoiceGrid items={roleItems} value={role} onChange={setRole} columns={3} />
@@ -245,10 +308,10 @@ function InvestmentIntake() {
             {step === 2 && (
               <>
                 <h1>
-                  What is your <span className="intake-gradient-text">investment capacity</span>?
+                  What is your <span className="intake-gradient-text">investment range</span>?
                 </h1>
                 <p className="intake-lead">
-                  We use this to suggest program scale, from classroom grants through multi-site partnerships.
+                  We match you to schools and programs appropriate for your exact budget — from a $1K classroom grant to a $2M+ district partnership.
                 </p>
                 <p className="intake-field-label">Annual giving range</p>
                 <IntakeChoiceGrid items={budgetItems} value={budget} onChange={setBudget} columns={3} />
@@ -291,7 +354,7 @@ function InvestmentIntake() {
 
         <p className="intake-footnote">
           <ShieldCheck size={14} aria-hidden />
-          Matches combine public-source references with prototype model estimates in the 12-parish sample. Not an official state allocation tool.
+          Matches use the LDOE 2023–24 School Directory (1,659 institutions) and prototype opportunity scores. Not an official state allocation tool.
         </p>
       </motion.div>
     </main>

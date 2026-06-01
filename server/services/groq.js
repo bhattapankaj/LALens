@@ -1,6 +1,8 @@
 const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODEL = "llama-3.3-70b-versatile";
 
+import schoolDirectory from "../data/schoolDirectory.json" with { type: "json" };
+
 /** Handles pasted .env lines, quotes, and BOM so the key actually reaches Groq */
 export function readGroqApiKey() {
   let k = process.env.GROQ_API_KEY;
@@ -59,12 +61,37 @@ export async function generateGroqInsight({ message, selectedParish, contextPari
         confidence: p.confidence
       }));
 
+    // Compact school summary: counts + up to 3 school names per scored parish
+    const schoolSummary = {};
+    scoredParishes.forEach((p) => {
+      const list = schoolDirectory[p.id] || [];
+      schoolSummary[p.id] = {
+        totalSchools: list.length,
+        publicSchools: list.filter((s) => s.type === "Public").length,
+        nonpublicSchools: list.filter((s) => s.type === "Nonpublic").length,
+        sampleNames: list.slice(0, 4).map((s) => s.name)
+      };
+    });
+
     const context = {
       totalParishesOnMap: contextParishes.length,
       scoredParishCount: scoredParishes.length,
       pendingCount: contextParishes.length - scoredParishes.length,
-      focusParish: selectedParish,
+      focusParish: selectedParish
+        ? {
+            ...selectedParish,
+            schools: schoolDirectory[selectedParish.id]
+              ? {
+                  totalSchools: (schoolDirectory[selectedParish.id] || []).length,
+                  publicSchools: (schoolDirectory[selectedParish.id] || []).filter((s) => s.type === "Public").length,
+                  nonpublicSchools: (schoolDirectory[selectedParish.id] || []).filter((s) => s.type === "Nonpublic").length,
+                  sampleNames: (schoolDirectory[selectedParish.id] || []).slice(0, 6).map((s) => `${s.name} (${s.grades || s.type}, ${s.city})`)
+                }
+              : null
+          }
+        : null,
       scoredParishes,
+      schoolSummaryByParish: schoolSummary,
       methodology: "35% Student Need + 20% Enrollment Pressure + 25% Workforce Gap + 10% Pathway Access Gap + 10% Feasibility. Prototype model estimates only."
     };
 
@@ -76,8 +103,10 @@ Key rules:
 - Parishes where hasMetrics is false (pendingCount parishes) have NO opportunity score. Never imply one.
 - Opportunity Scores are prototype model estimates — never call them official or statewide.
 - Census data (population, income, poverty, transportation) from U.S. Census Bureau ACS 5-Year 2023 is real public data.
+- School directory data (schoolSummaryByParish, focusParish.schools) is from the LDOE 2023–24 School Directory — this is real public data.
 - Never claim causal impact, ROI, or "proven outcomes."
 - If asked about a parish not in scoredParishes, check if it's a pending parish and say metrics aren't available yet.
+- When asked about schools or institutions in a parish, use the school directory data — include specific school names, types, and counts.
 
 Tone and format:
 - Sound like a sharp, knowledgeable analyst — not a template.
@@ -118,6 +147,7 @@ Tone and format:
       sources: [
         "Louisiana parish catalog (64 parishes mapped)",
         `Prototype metrics (${scoredParishes.length} scored parishes)`,
+        "LDOE 2023–24 School Directory (1,659 institutions, all 64 parishes)",
         "Opportunity score methodology"
       ],
       confidence

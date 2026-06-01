@@ -9,7 +9,7 @@
  *                    + 10% pathwayAccess + 10% feasibility
  */
 
-import censusProfiles from "./censusProfiles.json";
+import censusProfiles from "./censusProfiles.json" with { type: "json" };
 
 const censusMap = Object.fromEntries(censusProfiles.map((p) => [p.parishId, p]));
 void censusMap; // used for lookup reference only
@@ -72,53 +72,6 @@ const SKIP = new Set([
   "ouachita","rapides","claiborne","st-landry","terrebonne",
   "livingston","lincoln",
 ]);
-
-export const extendedParishRecords = censusProfiles
-  .filter((c) => !SKIP.has(c.parishId))
-  .map((c) => {
-    // Look up region from census name → derive from parishId mapping below
-    const region = REGION_MAP[c.parishId] ?? "Central Louisiana";
-    const demand = DEMAND[region] ?? ["Healthcare", "Skilled Trades", "Education"];
-    const scores = scoresFromPoverty(c.povertyRate);
-    const oScore = clamp(
-      0.35 * scores.studentNeedScore +
-      0.20 * scores.enrollmentPressureScore +
-      0.25 * scores.workforceGapScore +
-      0.10 * scores.pathwayAccessGapScore +
-      0.10 * scores.feasibilityScore,
-      30, 95
-    );
-
-    return {
-      id: c.parishId,
-      name: c.parishName,
-      region,
-      coordinates: COORDS[c.parishId] ?? [30.5, -91.9],
-      ...scores,
-      proficiencyRate:         clamp(60 - c.povertyRate * 1.1, 24, 58),
-      chronicAbsenteeismRate:  clamp(c.povertyRate * 0.7, 8, 32),
-      enrollmentChangePercent: oScore >= 75 ? -3.5 : oScore >= 60 ? -1.2 : 0.6,
-      graduationRate:          clamp(90 - c.povertyRate * 0.45, 74, 92),
-      povertyRate:             c.povertyRate,
-      topWorkforceDemand:      demand,
-      recommendedIntervention: interventionFor(scores, demand),
-      recommendationSummary:   `Prototype model estimate based on Census poverty indicators and regional workforce demand patterns.`,
-      keyEvidence: [
-        `Census poverty rate of ${c.povertyRate}% signals elevated student need.`,
-        `Median household income of $${c.medianHouseholdIncome.toLocaleString()} is below the state median.`,
-        `${demand[0]} and ${demand[1]} demand identified for ${region} in workforce projections.`,
-      ],
-      risks: [
-        "Scores are prototype estimates; validate with LDOE enrollment and performance files.",
-        "Implementation capacity varies; local partner assessment needed.",
-        "Data integration pending for official LDOE and LWC sources.",
-      ],
-      potentialPartners: ["Community college", "Local employers", "Workforce board"],
-      confidence: oScore >= 70 ? "Medium High" : "Medium",
-      enrollmentTrend: buildEnrollmentTrend(oScore),
-      workforceFit:    buildWorkforceFit(demand),
-    };
-  });
 
 // ── Region lookup ────────────────────────────────────────────────────────────
 const REGION_MAP = {
@@ -198,7 +151,7 @@ const COORDS = {
   "grant":                [31.6, -92.458],
   "iberia":               [29.868, -91.755],
   "iberville":            [30.257, -91.349],
-  "jackson":              [32.298, -90.369],
+  "jackson":              [32.298, -92.550],
   "jefferson":            [29.7, -90.129],
   "jefferson-davis":      [30.296, -92.826],
   "lafourche":            [29.5, -90.4],
@@ -231,3 +184,49 @@ const COORDS = {
   "west-feliciana":       [30.652, -91.394],
   "winn":                 [31.955, -92.647],
 };
+
+export const extendedParishRecords = censusProfiles
+  .filter((c) => !SKIP.has(c.parishId))
+  .map((c) => {
+    const region = REGION_MAP[c.parishId] ?? "Central Louisiana";
+    const demand = DEMAND[region] ?? ["Healthcare", "Skilled Trades", "Education"];
+    const scores = scoresFromPoverty(c.povertyRate);
+    const oScore = clamp(
+      0.35 * scores.studentNeedScore +
+      0.20 * scores.enrollmentPressureScore +
+      0.25 * scores.workforceGapScore +
+      0.10 * scores.pathwayAccessGapScore +
+      0.10 * scores.feasibilityScore,
+      30, 95
+    );
+
+    return {
+      id: c.parishId,
+      name: c.parishName,
+      region,
+      coordinates: COORDS[c.parishId] ?? [30.5, -91.9],
+      ...scores,
+      proficiencyRate:         clamp(60 - c.povertyRate * 1.1, 24, 58),
+      chronicAbsenteeismRate:  clamp(c.povertyRate * 0.7, 8, 32),
+      enrollmentChangePercent: oScore >= 75 ? -3.5 : oScore >= 60 ? -1.2 : 0.6,
+      graduationRate:          clamp(90 - c.povertyRate * 0.45, 74, 92),
+      povertyRate:             c.povertyRate,
+      topWorkforceDemand:      demand,
+      recommendedIntervention: interventionFor(scores, demand),
+      recommendationSummary:   `Prototype model estimate based on Census poverty indicators and regional workforce demand patterns.`,
+      keyEvidence: [
+        `Census poverty rate of ${c.povertyRate}% signals elevated student need.`,
+        `Median household income of $${c.medianHouseholdIncome.toLocaleString()} is below the state median.`,
+        `${demand[0]} and ${demand[1]} demand identified for ${region} in workforce projections.`,
+      ],
+      risks: [
+        "Scores are prototype estimates; validate with LDOE enrollment and performance files.",
+        "Implementation capacity varies; local partner assessment needed.",
+        "Data integration pending for official LDOE and LWC sources.",
+      ],
+      potentialPartners: ["Community college", "Local employers", "Workforce board"],
+      confidence: oScore >= 70 ? "Medium High" : "Medium",
+      enrollmentTrend: buildEnrollmentTrend(oScore),
+      workforceFit:    buildWorkforceFit(demand),
+    };
+  });

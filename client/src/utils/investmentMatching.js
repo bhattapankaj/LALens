@@ -6,6 +6,7 @@
 
 import { schools } from "../data/schools.js";
 import { parishes } from "../data/parishes.js";
+import schoolDirectory from "../data/schoolDirectory.json";
 
 // ── Constants (re-exported for InvestmentIntake) ────────────────────────────
 
@@ -19,11 +20,12 @@ export const INTAKE_ROLES = [
 ];
 
 export const INTAKE_BUDGETS = [
-  { id: "10k-50k",   title: "$10,000 – $50,000",     desc: "Classroom grants, supplies, tutoring" },
-  { id: "50k-250k",  title: "$50,000 – $250,000",    desc: "Programs, teacher support, technology" },
-  { id: "250k-1m",   title: "$250,000 – $1 Million", desc: "School-wide initiatives, facilities" },
-  { id: "1m-5m",     title: "$1 Million – $5 Million",desc: "District programs, major infrastructure" },
-  { id: "5m-plus",   title: "$5 Million+",            desc: "Transformational partnerships" }
+  { id: "1k-5k",     title: "$1,000 – $5,000",       desc: "Micro-grant: books, supplies, one classroom" },
+  { id: "5k-25k",    title: "$5,000 – $25,000",       desc: "Small grant: tutoring, enrichment programs" },
+  { id: "25k-100k",  title: "$25,000 – $100,000",     desc: "Program grant: teacher PD, technology" },
+  { id: "100k-500k", title: "$100,000 – $500,000",    desc: "School-wide initiative, curriculum, staff" },
+  { id: "500k-2m",   title: "$500,000 – $2 Million",  desc: "Multi-school programs, major infrastructure" },
+  { id: "2m-plus",   title: "$2 Million+",             desc: "Transformational district-level partnerships" }
 ];
 
 export const INTAKE_FOCUS = [
@@ -47,11 +49,12 @@ const ROLE_LABELS = {
 };
 
 const BUDGET_LABELS = {
-  "10k-50k":  "$10,000 – $50,000",
-  "50k-250k": "$50,000 – $250,000",
-  "250k-1m":  "$250,000 – $1 Million",
-  "1m-5m":    "$1 Million – $5 Million",
-  "5m-plus":  "$5 Million+"
+  "1k-5k":     "$1,000 – $5,000",
+  "5k-25k":    "$5,000 – $25,000",
+  "25k-100k":  "$25,000 – $100,000",
+  "100k-500k": "$100,000 – $500,000",
+  "500k-2m":   "$500,000 – $2 Million",
+  "2m-plus":   "$2 Million+"
 };
 
 const FOCUS_LABELS = {
@@ -66,7 +69,7 @@ const FOCUS_LABELS = {
 // ── Scoring helpers ─────────────────────────────────────────────────────────
 
 const BUDGET_LEVEL = {
-  "10k-50k": 1, "50k-250k": 2, "250k-1m": 3, "1m-5m": 4, "5m-plus": 5
+  "1k-5k": 1, "5k-25k": 2, "25k-100k": 3, "100k-500k": 4, "500k-2m": 5, "2m-plus": 6
 };
 
 const RELATED_FOCUS = {
@@ -262,11 +265,19 @@ function buildRisks(match, parish) {
 
 function buildPartners(match) {
   const parishShort = match.parishName;
+  // Pull up to 3 real high school / career center names from the directory
+  const dirSchools = (schoolDirectory[match.parishId] || [])
+    .filter((s) => /9|10|11|12|career|tech|voc/i.test(s.grades || ""))
+    .slice(0, 3)
+    .map((s) => s.name);
+  const realSchoolLine = dirSchools.length
+    ? dirSchools.join(", ")
+    : `${parishShort} area secondary schools (LDOE directory)`;
   return [
+    realSchoolLine + " — direct program implementation sites",
     `${parishShort} area community college or technical institute (dual enrollment and instructor pipeline)`,
     `Regional employers aligned with ${match.pathwayFit || "pathway focus"} (internship and hiring commitments)`,
-    `Louisiana Workforce Commission regional board (labor market data and program co-investment)`,
-    `${parishShort} Parish school district or charter network operator (implementation partnership)`
+    `Louisiana Workforce Commission regional board (labor market data and program co-investment)`
   ];
 }
 
@@ -313,6 +324,13 @@ export function generateInvestmentBrief(profile, topMatches) {
       "Design a pilot with measurable student and workforce outcomes."
     ],
     allMatches: topMatches,
+    parishSchools: (schoolDirectory[match.parishId] || []).slice(0, 8).map((s) => ({
+      name: s.name,
+      type: s.type,
+      grades: s.grades,
+      city: s.city
+    })),
+    parishSchoolCount: (schoolDirectory[match.parishId] || []).length,
     disclaimer: "Matches combine public-source references with prototype model estimates. They are decision-support outputs, not official funding decisions."
   };
 }

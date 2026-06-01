@@ -6,6 +6,8 @@ import SourceBadge from "./SourceBadge";
 const suggested = [
   "Top parishes for a new vocational pathway",
   "Healthcare workforce gaps vs proficiency",
+  "How many schools are in this parish?",
+  "Which parishes have the most high school programs?",
   "Why this parish ranks as urgent",
   "Strongest near-term intervention",
   "Data that would improve this recommendation"

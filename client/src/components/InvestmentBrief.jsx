@@ -21,7 +21,8 @@ import {
   Database,
   Loader2,
   CloudUpload,
-  Cloud
+  Cloud,
+  School
 } from "lucide-react";
 import SourceBadge from "./SourceBadge";
 import AuthButton from "./AuthButton";
@@ -487,6 +488,27 @@ function InvestmentBrief({ brief, onRecordInterest, onBack }) {
             </ul>
           </div>
         </div>
+
+        {/* Real LDOE schools in matched parish */}
+        {brief.parishSchools && brief.parishSchools.length > 0 ? (
+          <div className="brief-parish-schools">
+            <p className="brief-section-mini-title">
+              <School size={13} aria-hidden /> LDOE 2023–24 institutions in {m.parishName}
+              <span className="brief-school-count">{brief.parishSchoolCount} total</span>
+            </p>
+            <div className="brief-school-chips">
+              {brief.parishSchools.map((s, i) => (
+                <div key={i} className="brief-school-chip">
+                  <span className="brief-school-chip-name">{s.name}</span>
+                  <span className="brief-school-chip-meta">{s.grades || s.type} · {s.city}</span>
+                </div>
+              ))}
+            </div>
+            <p className="tiny muted" style={{ marginTop: "0.4rem" }}>
+              Source: Louisiana Department of Education · 2023–24 School Directory · <span style={{color:"#14b8a6"}}>Public source</span>
+            </p>
+          </div>
+        ) : null}
 
         {/* Next steps */}
         <div className="brief-next-steps-block">

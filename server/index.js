@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { parishes } from "./data/parishes.js";
 import chatRoutes from "./routes/chat.js";
 import publicDataRoutes from "./routes/publicData.js";
+import investmentBriefRoutes from "./routes/investmentBrief.js";
 import { isGroqConfigured } from "./services/groq.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -31,6 +32,7 @@ app.get("/api/parishes/:id", (req, res) => {
 
 app.use("/api/chat", chatRoutes);
 app.use("/api/public-data", publicDataRoutes);
+app.use("/api/investment-brief", investmentBriefRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
