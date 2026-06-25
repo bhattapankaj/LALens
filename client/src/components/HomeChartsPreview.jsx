@@ -91,7 +91,7 @@ function HomeChartsPreview() {
             <h3 className="home-chart-title">Opportunity Score by Parish</h3>
             <SourceBadge type="model" label="Model estimate" />
           </div>
-          <p className="home-chart-note">Illustrative scores from the 12-parish prototype dataset.</p>
+          <p className="home-chart-note">Prototype opportunity scores across all 64 Louisiana parishes.</p>
           <div className="home-chart-wrap" style={{ height: 220 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>

@@ -29,7 +29,7 @@ export const INVESTMENT_FOCUS_MIX = [
 /** Platform KPI strip — mix of public facts and catalog metadata */
 export const PLATFORM_KPI_CARDS = [
   { key: "mapped", value: "64", label: "Parishes mapped", hint: "Public geography layer", badge: "public" },
-  { key: "sample", value: "12", label: "Scored examples", hint: "Prototype sample", badge: "demo" },
+  { key: "sample", value: "64", label: "Parishes scored", hint: "Prototype model", badge: "model" },
   { key: "mastery", value: "35%", label: "Grades 3–8 Mastery+", hint: "LDOE public source", badge: "public", trend: "2024–2025" },
   { key: "grad", value: "83%+", label: "Graduation rate", hint: "LDOE public source", badge: "public", trend: "2022–2023" },
   { key: "health", value: "320K", label: "Healthcare workers", hint: "LWC public source", badge: "public", trend: "State employer scale" },

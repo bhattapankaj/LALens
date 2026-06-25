@@ -6,7 +6,7 @@ function PlatformKpiStrip() {
   return (
     <section className="platform-kpi-strip" aria-label="Louisiana education context">
       <p className="platform-kpi-intro tiny muted">
-        Decision preview combining public-source facts with the 12-parish sample model. Not live statewide official scoring.
+        Decision preview combining public-source facts with prototype opportunity scores across all 64 parishes. Not live statewide official scoring.
       </p>
       <div className="platform-kpi-grid">
         {PLATFORM_KPI_CARDS.map((c) => (

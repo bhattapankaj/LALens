@@ -25,7 +25,7 @@ function HomePlanningCard() {
       </div>
       <hr className="home-planning-divider" />
       <p className="home-planning-out">
-        <strong>Recommended output:</strong> A ranked parish brief within the 12-parish sample: evidence, risks, and suggested partners for discussion, not official statewide allocation.
+        <strong>Recommended output:</strong> A ranked parish brief across all 64 Louisiana parishes: evidence, risks, and suggested partners for discussion, not official statewide allocation.
       </p>
     </article>
   );

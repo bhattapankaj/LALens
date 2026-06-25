@@ -184,7 +184,7 @@ function Home() {
                 <BrandLogo variant="feature" />
               </span>
               <h3>AI Insight Engine</h3>
-              <p>Ask plain-English questions and receive answers grounded in the 12-parish sample in this build.</p>
+              <p>Ask plain-English questions and receive answers grounded in data from all 64 Louisiana parishes.</p>
             </motion.article>
             <motion.article className="home-feature-card" whileHover={{ y: -6 }}>
               <span className="home-feature-accent blue" />

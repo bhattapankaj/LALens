@@ -4,7 +4,7 @@ import { Check, Loader2 } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 
 const STAGES = [
-  { label: "Loading parish opportunity scores", detail: "12-parish sample · model estimates" },
+  { label: "Loading parish opportunity scores", detail: "64 parishes · prototype model estimates" },
   { label: "Cross-referencing workforce gap signals", detail: "Healthcare, trades, and STEM demand" },
   { label: "Evaluating pathway fit by focus area", detail: "CTE, literacy, and student-need overlays" },
   { label: "Ranking schools for your investment profile", detail: "Role, budget band, and focus weighting" }
