@@ -218,7 +218,7 @@ function FloatingAssistant() {
             <BrandLogo variant="launcher" alt="" aria-hidden />
           </span>
           <span className="floating-assistant-launcher-copy">
-            <span className="floating-assistant-launcher-hey">Hey, need help?</span>
+            <span className="floating-assistant-launcher-hey">Need help?</span>
             <span className="floating-assistant-launcher-label">Ask Navigator</span>
           </span>
         </motion.button>
