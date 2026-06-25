@@ -89,7 +89,7 @@ function InsightChat({ selectedParishId }) {
           </div>
           <div className="chat-title-row insight-chat-title-row">
             <h3>Insight assistant</h3>
-            <SourceBadge type="demo" label="12-parish sample" className="insight-chat-badge" />
+            <SourceBadge type="demo" label="64 parishes" className="insight-chat-badge" />
           </div>
         </div>
         <div className="insight-chat-mark" aria-hidden>
