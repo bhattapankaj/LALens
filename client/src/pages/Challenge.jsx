@@ -16,6 +16,7 @@ import {
 import { Link } from "react-router-dom";
 import BrandLogo from "../components/BrandLogo";
 import { problemMiniCards, productNarrative } from "../data/realityAnchors";
+import { SAMPLE_METRIC_COUNT, TOTAL_LA_PARISH_COUNT } from "../data/parishes";
 
 const PROBLEMS = [
   {
@@ -129,12 +130,12 @@ function Challenge() {
 
         <motion.ul className="challenge-stat-strip" {...fadeUp} transition={{ delay: 0.08 }}>
           <li>
-            <strong>64</strong>
+            <strong>{TOTAL_LA_PARISH_COUNT}</strong>
             <span>Parishes mapped</span>
           </li>
           <li>
-            <strong>12</strong>
-            <span>Sample scored</span>
+            <strong>{SAMPLE_METRIC_COUNT}</strong>
+            <span>Parishes scored</span>
           </li>
           <li>
             <strong>5</strong>

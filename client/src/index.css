@@ -23,6 +23,7 @@ body {
   font-family: "Space Grotesk", sans-serif;
   color: var(--text);
   background: var(--shell-bg);
+  overflow-x: hidden;
 }
 h1, h2, h3 { font-family: "Syne", sans-serif; margin: 0 0 0.65rem; }
 p { margin: 0; color: var(--muted); line-height: 1.6; }
@@ -1268,6 +1269,7 @@ body.home-page {
   min-height: 100vh;
   background: #fbf6ee;
   color: #1a0d07;
+  overflow-x: hidden;
 }
 
 /* Inner app routes: same chrome as home (navbar + cream + footer) */
@@ -1517,6 +1519,8 @@ body.home-page select {
   max-width: 1180px;
   margin: 0 auto;
   color: #1a0d07;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .home-hero-line {
@@ -2809,8 +2813,8 @@ body.home-page select {
   }
 
   .home-hero-headline {
-    font-size: clamp(2.75rem, 11vw, 4rem);
-    letter-spacing: -0.06em;
+    font-size: clamp(1.85rem, 9.5vw, 2.75rem);
+    letter-spacing: -0.055em;
   }
 
   .home-stepper-track {

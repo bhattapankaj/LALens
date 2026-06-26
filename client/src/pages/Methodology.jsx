@@ -64,9 +64,10 @@ function Methodology() {
           exact causal impact.
         </p>
         <p className="app-page-note">
-          The map includes all <strong>{TOTAL_LA_PARISH_COUNT} Louisiana parishes</strong> for geography. Detailed
-          metrics are attached to <strong>{SAMPLE_METRIC_COUNT} sample parishes</strong> in this prototype. Scores for
-          those parishes use published weights and sample values, not official statewide LDOE or workforce releases.
+          The map includes all <strong>{TOTAL_LA_PARISH_COUNT} Louisiana parishes</strong> for geography. Prototype
+          opportunity scores are available for all <strong>{SAMPLE_METRIC_COUNT} parishes</strong> using Census
+          poverty and income indicators. Scores use published weights and model estimates, not official statewide LDOE
+          or workforce releases.
         </p>
         <div className="app-page-hero-actions">
           <Link to="/platform" className="btn app-btn-gradient">

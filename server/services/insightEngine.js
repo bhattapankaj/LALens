@@ -9,7 +9,7 @@ function withMetrics(parishes) {
 }
 
 function catalogNote(total, metricN) {
-  return `The catalog lists ${total} Louisiana parishes on the map. Detailed prototype metrics (scores, charts) exist for ${metricN} sample parishes only—not statewide official statistics.`;
+  return `The catalog maps all ${total} Louisiana parishes. Prototype opportunity scores (derived from Census indicators) are available for all ${metricN} parishes—not official statewide LDOE or workforce statistics.`;
 }
 
 function topByOpportunity(parishes, k) {
@@ -49,7 +49,7 @@ export async function generateInsight({ message, selectedParish, parishes, histo
   let answer = briefFromParish(selectedParish, total, metricN);
   const sources = [
     "Louisiana parish catalog (map coverage)",
-    "Sample prototype metrics (12 parishes where hasMetrics is true)",
+    `Prototype metrics (${metricN} parishes scored)`,
     "Opportunity score methodology"
   ];
   let confidence = selectedParish?.hasMetrics ? selectedParish?.confidence || "Medium" : "Not Available";
@@ -77,7 +77,7 @@ export async function generateInsight({ message, selectedParish, parishes, histo
       const drivers = explainScoreDrivers(lead)
         .map((d) => `${d.label} (${d.value})`)
         .join(", ");
-      answer = `${catalogNote(total, metricN)} Ranking is limited to sample parishes with available prototype metrics (not all 64 parishes). The three highest Opportunity Scores in that subset are: ${top3.map((p) => `${p.name} (${p.opportunityScore})`).join(", ")}. The top parish (${lead.name}) is driven most by: ${drivers}. Confidence: Medium High within the sample subset only—not for causal impact or statewide funding decisions. Limitation: validate with districts, employers, and funders; expand metrics before broad allocation.`;
+      answer = `${catalogNote(total, metricN)} The three highest Opportunity Scores are: ${top3.map((p) => `${p.name} (${p.opportunityScore})`).join(", ")}. The top parish (${lead.name}) is driven most by: ${drivers}. Confidence: Medium High—not for causal impact or statewide funding decisions. Limitation: validate with districts, employers, and funders before broad allocation.`;
       confidence = "Medium High";
     }
   } else if (msg.includes("which 5 parishes") || /\btop\s*5\b/.test(msg) || /\bfive parishes\b/.test(msg)) {
