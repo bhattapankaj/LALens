@@ -4823,7 +4823,8 @@ body.home-page .home-dashboard-analytics .platform-chart-card h3 {
 .brief-score-ring-denom {
   font-size: 0.72rem;
   font-weight: 600;
-  opacity: 0.6;
+  color: rgba(124, 58, 237, 0.55);
+  -webkit-text-fill-color: rgba(124, 58, 237, 0.55);
 }
 .brief-top-match-detail .app-page-kicker { margin-bottom: 0.2rem; }
 .brief-top-match-name {
